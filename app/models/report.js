@@ -7,6 +7,8 @@ const reportSchema = new mongoose.Schema({
   },
   potency: {
     type: Number,
+    min: 0,
+    max: 10,
     required: true
   },
   info: {
