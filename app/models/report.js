@@ -1,12 +1,20 @@
 const mongoose = require('mongoose')
 
 const reportSchema = new mongoose.Schema({
-  title: {
+  species: {
     type: String,
     required: true
   },
-  text: {
+  potency: {
+    type: Number,
+    required: true
+  },
+  info: {
     type: String,
+    required: true
+  },
+  medicallySignificant: {
+    type: Boolean,
     required: true
   },
   owner: {
