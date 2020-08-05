@@ -10,8 +10,10 @@ curl "${API}${URL_PATH}" \
   --header "Authorization: Bearer ${TOKEN}" \
   --data '{
     "report": {
-      "text": "'"${TEXT}"'",
-      "title": "'"${TITLE}"'"
+      "species": "'"${SPECIES}"'",
+      "potency": "'"${POTENCY}"'",
+      "info": "'"${INFO}"'",
+      "medicallySignificant": "'"${MEDICALLYSIGNIFICANT}"'"
     }
   }'
 

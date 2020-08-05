@@ -18,8 +18,10 @@ let reportId
 
 describe('reports', () => {
   const reportParams = {
-    title: '13 JavaScript tricks SEI instructors don\'t want you to know',
-    text: 'You won\'believe number 8!'
+    species: 'brown t',
+    potency: 3,
+    info: 'bite not good but good',
+    medicallySignificant: false
   }
 
   before(done => {
@@ -63,7 +65,7 @@ describe('reports', () => {
         .end((e, res) => {
           res.should.have.status(200)
           res.body.report.should.be.a('object')
-          res.body.report.title.should.eql(reportParams.title)
+          res.body.report.species.should.eql(reportParams.species)
           done()
         })
     })
@@ -113,15 +115,16 @@ describe('reports', () => {
   })
 
   describe('POST /reports', () => {
-    it('should not POST an report without a title', done => {
-      let noTitle = {
-        text: 'Untitled',
-        owner: 'fakedID'
+    it('should not POST an report without a species', done => {
+      let noSpecies = {
+        potency: 3,
+        info: 'bite not good but good',
+        medicallySignificant: false
       }
       chai.request(server)
         .post('/reports')
         .set('Authorization', `Bearer ${token}`)
-        .send({ report: noTitle })
+        .send({ report: noSpecies })
         .end((e, res) => {
           res.should.have.status(422)
           res.should.be.a('object')
@@ -129,15 +132,48 @@ describe('reports', () => {
         })
     })
 
-    it('should not POST an report without text', done => {
-      let noText = {
-        title: 'Not a very good report, is it?',
-        owner: 'fakeID'
+    it('should not POST an report without info', done => {
+      let noInfo = {
+        species: 'brown t',
+        potency: 3,
+        medicallySignificant: false
       }
       chai.request(server)
         .post('/reports')
         .set('Authorization', `Bearer ${token}`)
-        .send({ report: noText })
+        .send({ report: noInfo })
+        .end((e, res) => {
+          res.should.have.status(422)
+          res.should.be.a('object')
+          done()
+        })
+    })
+    it('should not POST an report without potency', done => {
+      let noPotency = {
+        species: 'brown t',
+        info: 'bite not good but good',
+        medicallySignificant: false
+      }
+      chai.request(server)
+        .post('/reports')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ report: noPotency })
+        .end((e, res) => {
+          res.should.have.status(422)
+          res.should.be.a('object')
+          done()
+        })
+    })
+    it('should not POST an report without medical significance', done => {
+      let noMedicallySignificant = {
+        species: 'brown t',
+        potency: 3,
+        info: 'bite not good but good'
+      }
+      chai.request(server)
+        .post('/reports')
+        .set('Authorization', `Bearer ${token}`)
+        .send({ report: noMedicallySignificant })
         .end((e, res) => {
           res.should.have.status(422)
           res.should.be.a('object')
@@ -157,8 +193,10 @@ describe('reports', () => {
 
     it('should POST an report with the correct params', done => {
       let validReport = {
-        title: 'I ran a shell command. You won\'t believe what happened next!',
-        text: 'it was rm -rf / --no-preserve-root'
+        species: 'brown t',
+        potency: 3,
+        info: 'bite not good but good',
+        medicallySignificant: false
       }
       chai.request(server)
         .post('/reports')
@@ -168,8 +206,8 @@ describe('reports', () => {
           res.should.have.status(201)
           res.body.should.be.a('object')
           res.body.should.have.property('report')
-          res.body.report.should.have.property('title')
-          res.body.report.title.should.eql(validReport.title)
+          res.body.report.should.have.property('species')
+          res.body.report.species.should.eql(validReport.species)
           done()
         })
     })
@@ -179,8 +217,10 @@ describe('reports', () => {
     let reportId
 
     const fields = {
-      title: 'Find out which HTTP status code is your spirit animal',
-      text: 'Take this 4 question quiz to find out!'
+      species: 'brown t',
+      potency: 3,
+      info: 'bite not good but good',
+      medicallySignificant: false
     }
 
     before(async function () {
@@ -217,8 +257,10 @@ describe('reports', () => {
         .end((e, res) => {
           res.should.have.status(200)
           res.body.should.be.a('object')
-          res.body.report.title.should.eql(fields.title)
-          res.body.report.text.should.eql(fields.text)
+          res.body.report.species.should.eql(fields.species)
+          res.body.report.potency.should.eql(fields.potency)
+          res.body.report.info.should.eql(fields.info)
+          res.body.report.medicallySignificant.should.eql(fields.medicallySignificant)
           done()
         })
     })
@@ -227,7 +269,7 @@ describe('reports', () => {
       chai.request(server)
         .patch(`/reports/${reportId}`)
         .set('Authorization', `Bearer ${token}`)
-        .send({ report: { text: '' } })
+        .send({ report: { info: '' } })
         .then(() => {
           chai.request(server)
             .get(`/reports/${reportId}`)
@@ -235,9 +277,10 @@ describe('reports', () => {
             .end((e, res) => {
               res.should.have.status(200)
               res.body.should.be.a('object')
-              // console.log(res.body.report.text)
-              res.body.report.title.should.eql(fields.title)
-              res.body.report.text.should.eql(fields.text)
+              res.body.report.species.should.eql(fields.species)
+              res.body.report.potency.should.eql(fields.potency)
+              res.body.report.info.should.eql(fields.info)
+              res.body.report.medicallySignificant.should.eql(fields.medicallySignificant)
               done()
             })
         })
