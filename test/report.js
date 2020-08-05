@@ -1,6 +1,6 @@
 process.env.TESTENV = true
 
-let Example = require('../app/models/example.js')
+let Report = require('../app/models/report.js')
 let User = require('../app/models/user')
 
 const crypto = require('crypto')
@@ -14,16 +14,16 @@ chai.use(chaiHttp)
 
 const token = crypto.randomBytes(16).toString('hex')
 let userId
-let exampleId
+let reportId
 
-describe('Examples', () => {
-  const exampleParams = {
+describe('reports', () => {
+  const reportParams = {
     title: '13 JavaScript tricks SEI instructors don\'t want you to know',
     text: 'You won\'believe number 8!'
   }
 
   before(done => {
-    Example.deleteMany({})
+    Report.deleteMany({})
       .then(() => User.create({
         email: 'caleb',
         hashedPassword: '12345',
@@ -33,49 +33,49 @@ describe('Examples', () => {
         userId = user._id
         return user
       })
-      .then(() => Example.create(Object.assign(exampleParams, {owner: userId})))
+      .then(() => Report.create(Object.assign(reportParams, {owner: userId})))
       .then(record => {
-        exampleId = record._id
+        reportId = record._id
         done()
       })
       .catch(console.error)
   })
 
-  describe('GET /examples', () => {
-    it('should get all the examples', done => {
+  describe('GET /reports', () => {
+    it('should get all the reports', done => {
       chai.request(server)
-        .get('/examples')
+        .get('/reports')
         .set('Authorization', `Token token=${token}`)
         .end((e, res) => {
           res.should.have.status(200)
-          res.body.examples.should.be.a('array')
-          res.body.examples.length.should.be.eql(1)
+          res.body.reports.should.be.a('array')
+          res.body.reports.length.should.be.eql(1)
           done()
         })
     })
   })
 
-  describe('GET /examples/:id', () => {
-    it('should get one example', done => {
+  describe('GET /reports/:id', () => {
+    it('should get one report', done => {
       chai.request(server)
-        .get('/examples/' + exampleId)
+        .get('/reports/' + reportId)
         .set('Authorization', `Token token=${token}`)
         .end((e, res) => {
           res.should.have.status(200)
-          res.body.example.should.be.a('object')
-          res.body.example.title.should.eql(exampleParams.title)
+          res.body.report.should.be.a('object')
+          res.body.report.title.should.eql(reportParams.title)
           done()
         })
     })
   })
 
-  describe('DELETE /examples/:id', () => {
-    let exampleId
+  describe('DELETE /reports/:id', () => {
+    let reportId
 
     before(done => {
-      Example.create(Object.assign(exampleParams, { owner: userId }))
+      Report.create(Object.assign(reportParams, { owner: userId }))
         .then(record => {
-          exampleId = record._id
+          reportId = record._id
           done()
         })
         .catch(console.error)
@@ -83,7 +83,7 @@ describe('Examples', () => {
 
     it('must be owned by the user', done => {
       chai.request(server)
-        .delete('/examples/' + exampleId)
+        .delete('/reports/' + reportId)
         .set('Authorization', `Bearer notarealtoken`)
         .end((e, res) => {
           res.should.have.status(401)
@@ -93,7 +93,7 @@ describe('Examples', () => {
 
     it('should be succesful if you own the resource', done => {
       chai.request(server)
-        .delete('/examples/' + exampleId)
+        .delete('/reports/' + reportId)
         .set('Authorization', `Bearer ${token}`)
         .end((e, res) => {
           res.should.have.status(204)
@@ -103,7 +103,7 @@ describe('Examples', () => {
 
     it('should return 404 if the resource doesn\'t exist', done => {
       chai.request(server)
-        .delete('/examples/' + exampleId)
+        .delete('/reports/' + reportId)
         .set('Authorization', `Bearer ${token}`)
         .end((e, res) => {
           res.should.have.status(404)
@@ -112,16 +112,16 @@ describe('Examples', () => {
     })
   })
 
-  describe('POST /examples', () => {
-    it('should not POST an example without a title', done => {
+  describe('POST /reports', () => {
+    it('should not POST an report without a title', done => {
       let noTitle = {
         text: 'Untitled',
         owner: 'fakedID'
       }
       chai.request(server)
-        .post('/examples')
+        .post('/reports')
         .set('Authorization', `Bearer ${token}`)
-        .send({ example: noTitle })
+        .send({ report: noTitle })
         .end((e, res) => {
           res.should.have.status(422)
           res.should.be.a('object')
@@ -129,15 +129,15 @@ describe('Examples', () => {
         })
     })
 
-    it('should not POST an example without text', done => {
+    it('should not POST an report without text', done => {
       let noText = {
-        title: 'Not a very good example, is it?',
+        title: 'Not a very good report, is it?',
         owner: 'fakeID'
       }
       chai.request(server)
-        .post('/examples')
+        .post('/reports')
         .set('Authorization', `Bearer ${token}`)
-        .send({ example: noText })
+        .send({ report: noText })
         .end((e, res) => {
           res.should.have.status(422)
           res.should.be.a('object')
@@ -147,36 +147,36 @@ describe('Examples', () => {
 
     it('should not allow a POST from an unauthenticated user', done => {
       chai.request(server)
-        .post('/examples')
-        .send({ example: exampleParams })
+        .post('/reports')
+        .send({ report: reportParams })
         .end((e, res) => {
           res.should.have.status(401)
           done()
         })
     })
 
-    it('should POST an example with the correct params', done => {
-      let validExample = {
+    it('should POST an report with the correct params', done => {
+      let validReport = {
         title: 'I ran a shell command. You won\'t believe what happened next!',
         text: 'it was rm -rf / --no-preserve-root'
       }
       chai.request(server)
-        .post('/examples')
+        .post('/reports')
         .set('Authorization', `Bearer ${token}`)
-        .send({ example: validExample })
+        .send({ report: validReport })
         .end((e, res) => {
           res.should.have.status(201)
           res.body.should.be.a('object')
-          res.body.should.have.property('example')
-          res.body.example.should.have.property('title')
-          res.body.example.title.should.eql(validExample.title)
+          res.body.should.have.property('report')
+          res.body.report.should.have.property('title')
+          res.body.report.title.should.eql(validReport.title)
           done()
         })
     })
   })
 
-  describe('PATCH /examples/:id', () => {
-    let exampleId
+  describe('PATCH /reports/:id', () => {
+    let reportId
 
     const fields = {
       title: 'Find out which HTTP status code is your spirit animal',
@@ -184,15 +184,15 @@ describe('Examples', () => {
     }
 
     before(async function () {
-      const record = await Example.create(Object.assign(exampleParams, { owner: userId }))
-      exampleId = record._id
+      const record = await Report.create(Object.assign(reportParams, { owner: userId }))
+      reportId = record._id
     })
 
     it('must be owned by the user', done => {
       chai.request(server)
-        .patch('/examples/' + exampleId)
+        .patch('/reports/' + reportId)
         .set('Authorization', `Bearer notarealtoken`)
-        .send({ example: fields })
+        .send({ report: fields })
         .end((e, res) => {
           res.should.have.status(401)
           done()
@@ -201,9 +201,9 @@ describe('Examples', () => {
 
     it('should update fields when PATCHed', done => {
       chai.request(server)
-        .patch(`/examples/${exampleId}`)
+        .patch(`/reports/${reportId}`)
         .set('Authorization', `Bearer ${token}`)
-        .send({ example: fields })
+        .send({ report: fields })
         .end((e, res) => {
           res.should.have.status(204)
           done()
@@ -212,32 +212,32 @@ describe('Examples', () => {
 
     it('shows the updated resource when fetched with GET', done => {
       chai.request(server)
-        .get(`/examples/${exampleId}`)
+        .get(`/reports/${reportId}`)
         .set('Authorization', `Bearer ${token}`)
         .end((e, res) => {
           res.should.have.status(200)
           res.body.should.be.a('object')
-          res.body.example.title.should.eql(fields.title)
-          res.body.example.text.should.eql(fields.text)
+          res.body.report.title.should.eql(fields.title)
+          res.body.report.text.should.eql(fields.text)
           done()
         })
     })
 
     it('doesn\'t overwrite fields with empty strings', done => {
       chai.request(server)
-        .patch(`/examples/${exampleId}`)
+        .patch(`/reports/${reportId}`)
         .set('Authorization', `Bearer ${token}`)
-        .send({ example: { text: '' } })
+        .send({ report: { text: '' } })
         .then(() => {
           chai.request(server)
-            .get(`/examples/${exampleId}`)
+            .get(`/reports/${reportId}`)
             .set('Authorization', `Bearer ${token}`)
             .end((e, res) => {
               res.should.have.status(200)
               res.body.should.be.a('object')
-              // console.log(res.body.example.text)
-              res.body.example.title.should.eql(fields.title)
-              res.body.example.text.should.eql(fields.text)
+              // console.log(res.body.report.text)
+              res.body.report.title.should.eql(fields.title)
+              res.body.report.text.should.eql(fields.text)
               done()
             })
         })
