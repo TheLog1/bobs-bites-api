@@ -60,13 +60,14 @@ router.get('/reports/:id', requireToken, (req, res, next) => {
 // CREATE
 // POST /reports
 router.post('/reports', requireToken, (req, res, next) => {
+  const report = req.body
   // set owner of new report to be current user
-  req.body.report.owner = req.user.id
+  report.owner = req.user.id
 
-  Report.create(req.body.report)
+  Report.create(report)
     // respond to succesful `create` with status 201 and JSON of new "report"
-    .then(report => {
-      res.status(201).json({ report: report.toObject() })
+    .then(newReport => {
+      res.status(201).json({ report: newReport.toObject() })
     })
     // if an error occurs, pass it off to our error handler
     // the error handler needs the error message and the `res` object so that it
